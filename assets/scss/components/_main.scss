@@ -7,7 +7,7 @@ body {
 .snow_bg {
   height: 100vh;
   background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
-  // overflow: hidden;
+  overflow: hidden;
 }
 
 @function random_range($min, $max) {
@@ -16,39 +16,76 @@ body {
   @return $rand_range;
 }
 .snow {
-  $total: 20;
+  $total: 200;
   width: 10px;
   height: 10px;
   background-color: #fff;
-  opacity: 1;
   border-radius: 50%;
-
   @for $i from 1 through $total {
     $random_x: random(
-        $limit: 10000,
+        $limit: 1000000,
       ) *
-      0.01vh;
-    $random_offset: random_range(-1000000, 1000000) * 0.0001vh;
-    $x_end: random_x + $random_offset;
-    $x_end_yoyo: random_x + floor($random_offset/2);
-    $random_time: random_range(300000, 800000) * 1/1000000;
-    $random_y: $random_time * 100vh;
-    $random_duration: random_range(7, 20) * 1s;
-    $random_delay: random(30) * -1s;
-    $random_sale: random(
+      0.0001vw;
+    $random_offset: random_range(-100000, 100000) * 0.0001vw;
+    $x_end: $random_x + $random_offset;
+    $x_end_yoyo: $random_x + ($random_offset / 2);
+    $random_yoyo_time: random_range(30000, 80000) * 1/100000;
+    $random_y: $random_yoyo_time * 100vh;
+    $random_duration: random_range(13, 50) * 1s;
+    $random_delay: random(20) * -1s;
+    $random_scale: random(
         $limit: 1000,
       ) *
-      1/1000;
+      0.001;
     &:nth-child(#{$i}) {
-      transform: translate($random_x, -10px);
+      opacity: random_range(5000, 10000) * 0.0001;
+      transform: translate($random_x, -10px) scale($random_scale);
+
       animation: fall-#{$i} $random_duration $random_delay infinite linear;
       @keyframes fall-#{$i} {
-        #{percentage($random_time)} {
-          transform: translate($x_end_yoyo, $random_y);
+        0% {
+          transform: translate($random_x, -10px) scale($random_scale);
+        }
+        #{percentage($random_yoyo_time)} {
+          transform: translate($x_end, $random_y) scale($random_scale);
         }
         to {
-          transform: translate($random_x, 100vh);
+          transform: translate($x_end_yoyo, 100vh) scale($random_scale);
         }
+      }
+    }
+  }
+}
+
+.rain {
+  $total: 100;
+  font-size: 20px;
+
+  .cube {
+    transform: rotate(270deg);
+    display: inline-block;
+    margin: 0 2px;
+  }
+
+  color: green;
+
+  @for $i from 0 through $total {
+    $random_y: random_range(-100000, 100000) * 0.001vw;
+    $random_x_start: random_range(0, 100000) * 0.001vw;
+    $random_y_position: random_range(100000, 300000) * 0.000001;
+    $x_end: 110vh;
+    $random-duration: random_range(4, 10) * 1s;
+    &:nth-child(#{$i}) {
+      transform: translate($random_y, -310px) rotate(90deg);
+      animation: rain-#{$i} $random-duration infinite linear;
+    }
+
+    @keyframes rain-#{$i} {
+      #{percentage($random_y_position)} {
+        transform: translate($random_y, 0px) rotate(90deg);
+      }
+      to {
+        transform: translate($random_y, calc(100vh + 660px)) rotate(90deg);
       }
     }
   }
