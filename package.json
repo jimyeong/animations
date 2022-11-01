@@ -4,7 +4,7 @@
   "description": "// compiler 생성 sass --watch assets/scss/style.scss:assets/css/style.css",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "server": "browserify assets/js/matrix/CodeRain.js -o assets/js/bundle.js; grunt"
   },
   "keywords": [],
   "author": "",

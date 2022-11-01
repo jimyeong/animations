@@ -1,3 +1,47 @@
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+class Background {
+  constructor() {
+    this.body = document.getElementsByTagName("body")[0];
+
+    if (this.body) {
+      this.setStage();
+    }
+  }
+
+  setStage() {
+    console.log(this.body.style);
+    this.body.style.height = "100vh";
+    this.body.style.overflow = "hidden";
+    this.body.style.background =
+      "radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%)";
+  }
+}
+
+module.exports = Background;
+
+},{}],2:[function(require,module,exports){
+const Background = require("./Background");
+const Rain = require("./Rain");
+
+class CodeRain {
+  constructor() {
+    this.body = document.getElementsByTagName("body")[0];
+    new Background();
+    const RainArr = [];
+
+    for (let i = 0; i < 40; i++) {
+      const r = new Rain();
+      RainArr.push(r);
+    }
+
+    console.log("Code Rain is Excuted");
+  }
+}
+
+module.exports = CodeRain;
+window.CodeRain = CodeRain;
+
+},{"./Background":1,"./Rain":3}],3:[function(require,module,exports){
 const Utils = require("../utils/Utils");
 class Rain {
   characters = [
@@ -75,3 +119,37 @@ class Rain {
 }
 
 module.exports = Rain;
+
+},{"../utils/Utils":4}],4:[function(require,module,exports){
+const Utils = {
+  getRandomNumber: function (limit) {
+    return Math.floor(Math.random() * limit);
+  },
+  getRangedRandomNumber: function (min, max) {
+    const diffLimit = max - min - 1;
+    return min + Utils.getRandomNumber(diffLimit);
+  },
+  createDOMElement: function (elName) {
+    return document.createElement(elName);
+  },
+  prependChild: function (el, childNode) {
+    el.prepend(childNode);
+  },
+  addAttribute: function (el, attrs) {
+    console.log(typeof attrs);
+    if (typeof attrs == "object") {
+      if (attrs.length) {
+        attrs.forEach((attr) => {
+          el.setAttribute(attr.name, attr.value);
+        });
+      }
+      return el;
+    }
+
+    return el;
+  },
+};
+
+module.exports = Utils;
+
+},{}]},{},[2]);
