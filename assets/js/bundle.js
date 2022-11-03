@@ -22,6 +22,7 @@ module.exports = Background;
 },{}],2:[function(require,module,exports){
 const Background = require("./Background");
 const Rain = require("./Rain");
+const Utils = require("../utils/Utils");
 
 class CodeRain {
   constructor() {
@@ -29,8 +30,9 @@ class CodeRain {
     new Background();
     const RainArr = [];
 
-    for (let i = 0; i < 40; i++) {
-      const r = new Rain();
+    for (let i = 0; i < 1; i++) {
+      const randomCharacterLength = Utils.getRangedRandomNumber(10, 70);
+      const r = new Rain(randomCharacterLength);
       RainArr.push(r);
     }
 
@@ -41,7 +43,7 @@ class CodeRain {
 module.exports = CodeRain;
 window.CodeRain = CodeRain;
 
-},{"./Background":1,"./Rain":3}],3:[function(require,module,exports){
+},{"../utils/Utils":4,"./Background":1,"./Rain":3}],3:[function(require,module,exports){
 const Utils = require("../utils/Utils");
 class Rain {
   characters = [
@@ -73,10 +75,13 @@ class Rain {
   // characters = ["가", "나", "다", "라", "마", "바", "사", "아", "차", "파"];
   // characters: "ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ";
   randomCharacterSet = new Set();
-  constructor() {
+  constructor(randomLength) {
+    console.log("RandomLegnth", randomLength);
     this.rainID = null;
-    for (let i = 0; i < this.characters.length; i++) {
-      this.randomCharacterSet.add(this.characters[i]);
+    this.randomLength = randomLength;
+    for (let i = 0; i < randomLength; i++) {
+      const randomIndex = Utils.getRandomNumber(this.characters.length);
+      this.randomCharacterSet.add(this.characters[randomIndex]);
     }
     // this.setRandomCharacter();
     this.setRainToDOM();
@@ -88,13 +93,17 @@ class Rain {
     if (!document.body) console.log("no body");
     if (document.body) {
       const el = Utils.createDOMElement("div");
+      // el.style.transform = "rotate(90deg)";
       el.style.color = "green";
       el.style.fontSize = "20px";
+      el.style.transformOrigin = "left top";
+      el.style.transform = "translateX(40px) rotate(90deg)";
+
       //   el.style.backgroundImage =
       //     "linear-gradient(99deg, rgba(14,62,2,1) 0%, rgba(51,202,68,1) 20%, rgba(231,251,231,1) 40%)";
-      el.style.backgroundSize = "100%";
-      // el.style.backgroundClip = "text";
-      // el.style.textFillColor = "#ff060605";
+      //   el.style.backgroundSize = "100%";
+      //   el.style.webkitBackgroundClip = "text";
+      //   el.style.webkitTextFillColor = "#ff060605";
       /**
        * background-color: green;
   background-image: linear-gradient(99deg, rgba(14,62,2,1) 0%, rgba(51,202,68,1) 20%, rgba(231,251,231,1) 40%);
@@ -105,10 +114,13 @@ class Rain {
       Utils.addAttribute(el, [{ name: "class", value: "rain" }]);
       this.rainID = setInterval(() => {
         el.innerHTML = "";
-        for (let i = 0; i < this.characters.length; i++) {
+        for (let i = 0; i < this.randomLength; i++) {
           const span = Utils.createDOMElement("span");
           let randomIdx = Utils.getRandomNumber(this.characters.length - 1);
           span.innerHTML = this.characters[Utils.getRandomNumber(randomIdx)];
+          span.style.transformOrigin = "left top";
+          span.style.transform = "rotate(-90deg)";
+
           Utils.addAttribute(span, [{ name: "class", value: "char" }]);
           Utils.prependChild(el, span);
         }
@@ -136,7 +148,6 @@ const Utils = {
     el.prepend(childNode);
   },
   addAttribute: function (el, attrs) {
-    console.log(typeof attrs);
     if (typeof attrs == "object") {
       if (attrs.length) {
         attrs.forEach((attr) => {

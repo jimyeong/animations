@@ -1,5 +1,6 @@
 const Background = require("./Background");
 const Rain = require("./Rain");
+const Utils = require("../utils/Utils");
 
 class CodeRain {
   constructor() {
@@ -7,8 +8,9 @@ class CodeRain {
     new Background();
     const RainArr = [];
 
-    for (let i = 0; i < 40; i++) {
-      const r = new Rain();
+    for (let i = 0; i < 1; i++) {
+      const randomCharacterLength = Utils.getRangedRandomNumber(10, 70);
+      const r = new Rain(randomCharacterLength);
       RainArr.push(r);
     }
 

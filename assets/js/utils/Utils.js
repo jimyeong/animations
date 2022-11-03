@@ -13,7 +13,6 @@ const Utils = {
     el.prepend(childNode);
   },
   addAttribute: function (el, attrs) {
-    console.log(typeof attrs);
     if (typeof attrs == "object") {
       if (attrs.length) {
         attrs.forEach((attr) => {
