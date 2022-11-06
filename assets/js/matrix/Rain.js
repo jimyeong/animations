@@ -47,11 +47,13 @@ class Rain {
     if (!document.body) console.log("no body");
     if (document.body) {
       const el = Utils.createDOMElement("div");
-      // el.style.transform = "rotate(90deg)";
+      el.style.transform = "rotate(90deg)";
       el.style.color = "green";
-      el.style.fontSize = "20px";
+      el.style.fontSize = "24px";
+      el.style.letterSpacing = "3px";
+      el.style.fontWeight = "bold";
       el.style.transformOrigin = "left top";
-      el.style.transform = "translateX(40px) rotate(90deg)";
+      // el.style.transform = "translateX(40px) rotate(90deg)";
 
       //   el.style.backgroundImage =
       //     "linear-gradient(99deg, rgba(14,62,2,1) 0%, rgba(51,202,68,1) 20%, rgba(231,251,231,1) 40%)";
@@ -72,6 +74,7 @@ class Rain {
           const span = Utils.createDOMElement("span");
           let randomIdx = Utils.getRandomNumber(this.characters.length - 1);
           span.innerHTML = this.characters[Utils.getRandomNumber(randomIdx)];
+          span.style.display = "inline-block";
           span.style.transformOrigin = "left top";
           span.style.transform = "rotate(-90deg)";
 

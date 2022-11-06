@@ -1,4 +1,71 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const Utils = require("../utils/Utils");
+
+class AnimationController {
+  randomX_range;
+  randomX = [];
+
+  randomY_range;
+  randomY;
+
+  constructor(length) {
+    this.elements = document.body.children;
+    this.childrenLength = length;
+    this.randomX[0] = 0;
+    for (let i = 1; i < length + 1; i++) {
+      const randomX_range = Utils.getRangedRandomNumber(-10000, 100000);
+      const randomX = `${String(randomX_range * 0.001)}vw`;
+      this.randomX[i] = randomX;
+    }
+    if (this.childrenLength > 0) {
+      this.setKeyFrames();
+      this.initAnimaiton();
+    }
+  }
+  setKeyFrames() {
+    this.randomY_range = Utils.getRangedRandomNumber(-10000, -1000);
+    this.randomY = `${String(this.randomY_range * 0.01)}vh`;
+    const styleTag = Utils.createDOMElement("style");
+    styleTag.type = "text/css";
+    for (let i = 1; i < this.childrenLength + 1; i++) {
+      const randomAnimaFrame = Utils.getRangedRandomNumber(30, 70);
+      const randomPercent = `${randomAnimaFrame}%`;
+      const randomY = `${randomAnimaFrame}vh`;
+      console.log("what is the randomX", this.randomX);
+      const keyFrame = `
+        @keyframes fall-${i} {
+            ${randomPercent}{
+            transform: translate(${this.randomX[i]}, ${randomY}) rotate(90deg);
+            }
+            to {
+            transform: translate(${this.randomX[i]} , 100vh) rotate(90deg);
+            }
+        }
+        `;
+      styleTag.innerHTML += keyFrame;
+      document.head.appendChild(styleTag);
+    }
+  }
+  initAnimaiton() {
+    const randomDuration = `${Utils.getRangedRandomNumber(4, 10) * 1}s`;
+
+    for (let i = 1; i < this.childrenLength + 1; i++) {
+      const randomDelay = `${Utils.getRandomNumber(0, 5) * 1}s`;
+      const el = this.elements[i];
+      el.style.transform = `translate(${this.randomX[i]}, -100px) rotate(90deg)`;
+      // el.style.animation = `fall-${i} ${randomDuration} ${randomDelay} infinite linear`;
+      el.style.animationName = `fall-${i}`;
+      el.style.animationDuration = `${randomDuration}`;
+      el.style.animationDelay = `${randomDelay}`;
+      el.style.animationIteration = "infinite";
+      el.style.easingFunction = "linear";
+    }
+  }
+}
+
+module.exports = AnimationController;
+
+},{"../utils/Utils":5}],2:[function(require,module,exports){
 class Background {
   constructor() {
     this.body = document.getElementsByTagName("body")[0];
@@ -19,22 +86,26 @@ class Background {
 
 module.exports = Background;
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 const Background = require("./Background");
 const Rain = require("./Rain");
 const Utils = require("../utils/Utils");
+const AnimationController = require("./AnimationController");
 
 class CodeRain {
   constructor() {
     this.body = document.getElementsByTagName("body")[0];
+    this.rainLength = 200;
     new Background();
     const RainArr = [];
 
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < this.rainLength; i++) {
       const randomCharacterLength = Utils.getRangedRandomNumber(10, 70);
       const r = new Rain(randomCharacterLength);
       RainArr.push(r);
     }
+
+    new AnimationController(this.rainLength);
 
     console.log("Code Rain is Excuted");
   }
@@ -43,7 +114,7 @@ class CodeRain {
 module.exports = CodeRain;
 window.CodeRain = CodeRain;
 
-},{"../utils/Utils":4,"./Background":1,"./Rain":3}],3:[function(require,module,exports){
+},{"../utils/Utils":5,"./AnimationController":1,"./Background":2,"./Rain":4}],4:[function(require,module,exports){
 const Utils = require("../utils/Utils");
 class Rain {
   characters = [
@@ -93,11 +164,13 @@ class Rain {
     if (!document.body) console.log("no body");
     if (document.body) {
       const el = Utils.createDOMElement("div");
-      // el.style.transform = "rotate(90deg)";
+      el.style.transform = "rotate(90deg)";
       el.style.color = "green";
-      el.style.fontSize = "20px";
+      el.style.fontSize = "24px";
+      el.style.letterSpacing = "3px";
+      el.style.fontWeight = "bold";
       el.style.transformOrigin = "left top";
-      el.style.transform = "translateX(40px) rotate(90deg)";
+      // el.style.transform = "translateX(40px) rotate(90deg)";
 
       //   el.style.backgroundImage =
       //     "linear-gradient(99deg, rgba(14,62,2,1) 0%, rgba(51,202,68,1) 20%, rgba(231,251,231,1) 40%)";
@@ -118,6 +191,7 @@ class Rain {
           const span = Utils.createDOMElement("span");
           let randomIdx = Utils.getRandomNumber(this.characters.length - 1);
           span.innerHTML = this.characters[Utils.getRandomNumber(randomIdx)];
+          span.style.display = "inline-block";
           span.style.transformOrigin = "left top";
           span.style.transform = "rotate(-90deg)";
 
@@ -132,7 +206,7 @@ class Rain {
 
 module.exports = Rain;
 
-},{"../utils/Utils":4}],4:[function(require,module,exports){
+},{"../utils/Utils":5}],5:[function(require,module,exports){
 const Utils = {
   getRandomNumber: function (limit) {
     return Math.floor(Math.random() * limit);
@@ -163,4 +237,4 @@ const Utils = {
 
 module.exports = Utils;
 
-},{}]},{},[2]);
+},{}]},{},[3]);
