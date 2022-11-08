@@ -50,15 +50,15 @@ class AnimationController {
     const randomDuration = `${Utils.getRangedRandomNumber(4, 10) * 1}s`;
 
     for (let i = 1; i < this.childrenLength + 1; i++) {
-      const randomDelay = `${Utils.getRandomNumber(0, 5) * 1}s`;
+      const randomDelay = `${Utils.getRangedRandomNumber(1, 5) * 1}s`;
       const el = this.elements[i];
       el.style.transform = `translate(${this.randomX[i]}, -100px) rotate(90deg)`;
       // el.style.animation = `fall-${i} ${randomDuration} ${randomDelay} infinite linear`;
       el.style.animationName = `fall-${i}`;
       el.style.animationDuration = `${randomDuration}`;
       el.style.animationDelay = `${randomDelay}`;
-      el.style.animationIteration = "infinite";
-      el.style.easingFunction = "linear";
+      el.style.animationIterationCount = "infinite";
+      el.style.animationTimingFunction = "linear";
     }
   }
 }
@@ -95,12 +95,12 @@ const AnimationController = require("./AnimationController");
 class CodeRain {
   constructor() {
     this.body = document.getElementsByTagName("body")[0];
-    this.rainLength = 200;
+    this.rainLength = 30;
     new Background();
     const RainArr = [];
 
     for (let i = 0; i < this.rainLength; i++) {
-      const randomCharacterLength = Utils.getRangedRandomNumber(10, 70);
+      const randomCharacterLength = Utils.getRangedRandomNumber(40, 100);
       const r = new Rain(randomCharacterLength);
       RainArr.push(r);
     }
@@ -142,6 +142,16 @@ class Rain {
     "ｻ",
     "ｼ",
     "ｽ",
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
   ];
   // characters = ["가", "나", "다", "라", "마", "바", "사", "아", "차", "파"];
   // characters: "ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ";

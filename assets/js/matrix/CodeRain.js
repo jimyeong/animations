@@ -11,7 +11,7 @@ class CodeRain {
     const RainArr = [];
 
     for (let i = 0; i < this.rainLength; i++) {
-      const randomCharacterLength = Utils.getRangedRandomNumber(10, 70);
+      const randomCharacterLength = Utils.getRangedRandomNumber(40, 100);
       const r = new Rain(randomCharacterLength);
       RainArr.push(r);
     }

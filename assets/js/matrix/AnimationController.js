@@ -49,15 +49,15 @@ class AnimationController {
     const randomDuration = `${Utils.getRangedRandomNumber(4, 10) * 1}s`;
 
     for (let i = 1; i < this.childrenLength + 1; i++) {
-      const randomDelay = `${Utils.getRandomNumber(0, 5) * 1}s`;
+      const randomDelay = `${Utils.getRangedRandomNumber(1, 5) * 1}s`;
       const el = this.elements[i];
       el.style.transform = `translate(${this.randomX[i]}, -100px) rotate(90deg)`;
       // el.style.animation = `fall-${i} ${randomDuration} ${randomDelay} infinite linear`;
       el.style.animationName = `fall-${i}`;
       el.style.animationDuration = `${randomDuration}`;
       el.style.animationDelay = `${randomDelay}`;
-      el.style.animationIteration = "infinite";
-      el.style.easingFunction = "linear";
+      el.style.animationIterationCount = "infinite";
+      el.style.animationTimingFunction = "linear";
     }
   }
 }
