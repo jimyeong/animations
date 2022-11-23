@@ -180,20 +180,7 @@ class Rain {
       el.style.letterSpacing = "3px";
       el.style.fontWeight = "bold";
       el.style.transformOrigin = "left top";
-      // el.style.transform = "translateX(40px) rotate(90deg)";
 
-      //   el.style.backgroundImage =
-      //     "linear-gradient(99deg, rgba(14,62,2,1) 0%, rgba(51,202,68,1) 20%, rgba(231,251,231,1) 40%)";
-      //   el.style.backgroundSize = "100%";
-      //   el.style.webkitBackgroundClip = "text";
-      //   el.style.webkitTextFillColor = "#ff060605";
-      /**
-       * background-color: green;
-  background-image: linear-gradient(99deg, rgba(14,62,2,1) 0%, rgba(51,202,68,1) 20%, rgba(231,251,231,1) 40%);
-  background-size: 100%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: #ff060605;
-       */
       Utils.addAttribute(el, [{ name: "class", value: "rain" }]);
       this.rainID = setInterval(() => {
         el.innerHTML = "";
