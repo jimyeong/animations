@@ -81,7 +81,7 @@ window.addEventListener("load", () => {
   inputText.addEventListener("keyup", (e) => {
     const { value } = e.target;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    setGrid();
+    //setGrid();
     wrapText(value);
   });
 });
