@@ -1,209 +1,332 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-const Utils = require("../utils/Utils");
+require("./particlized");
 
-class AnimationController {
-  randomX_range;
-  randomX = [];
+},{"./particlized":4}],2:[function(require,module,exports){
+const Particle = require("./Particle");
 
-  randomY_range;
-  randomY;
-
-  constructor(length) {
-    this.elements = document.body.children;
-    this.childrenLength = length;
-    this.randomX[0] = 0;
-    for (let i = 1; i < length + 1; i++) {
-      const randomX_range = Utils.getRangedRandomNumber(-10000, 100000);
-      const randomX = `${String(randomX_range * 0.001)}vw`;
-      this.randomX[i] = randomX;
-    }
-    if (this.childrenLength > 0) {
-      this.setKeyFrames();
-      this.initAnimaiton();
-    }
+class Effect {
+  constructor(context, canvas) {
+    this.context = context;
+    this.canvas = canvas;
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+    this.fontSize = 90;
+    this.lineHeight = this.fontSize * 0.8;
+    this.context.font = `${this.fontSize}px Helvetica`;
+    this.context.textAlign = "center";
+    this.context.textBaseLine = "middle";
+    this.context.fillStyle = "#fff";
+    this.textMaxLength = 400;
+    this.gap = 3;
   }
-  setKeyFrames() {
-    this.randomY_range = Utils.getRangedRandomNumber(-10000, -1000);
-    this.randomY = `${String(this.randomY_range * 0.01)}vh`;
-    const styleTag = Utils.createDOMElement("style");
-    styleTag.type = "text/css";
-    for (let i = 1; i < this.childrenLength + 1; i++) {
-      const randomAnimaFrame = Utils.getRangedRandomNumber(30, 70);
-      const randomPercent = `${randomAnimaFrame}%`;
-      const randomY = `${randomAnimaFrame}vh`;
-      console.log("what is the randomX", this.randomX);
-      const keyFrame = `
-        @keyframes fall-${i} {
-            ${randomPercent}{
-            transform: translate(${this.randomX[i]}, ${randomY}) rotate(90deg);
-            }
-            to {
-            transform: translate(${this.randomX[i]} , 100vh) rotate(90deg);
-            }
+  convertToPixels() {
+    this.particles = [];
+    const pixels = this.context.getImageData(
+      0,
+      0,
+      this.canvas.width,
+      this.canvas.height
+    ).data;
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    for (let y = 0; y < this.canvas.height; y += this.gap) {
+      for (let x = 0; x < this.canvas.width; x += this.gap) {
+        const index = (this.canvas.width * y + x) * 4;
+        const alpha = pixels[index + 3];
+        if (alpha > 0) {
+          const red = pixels[index];
+          const green = pixels[index + 1];
+          const blue = pixels[index + 2];
+          const colour = `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+
+          this.particles.push(new Particle(this, x, y, colour));
+
+          // render
+          this.context.fillStyle = colour;
+          this.context.fillRect(x, y, this.gap, this.gap);
         }
-        `;
-      styleTag.innerHTML += keyFrame;
-      document.head.appendChild(styleTag);
+      }
     }
   }
-  initAnimaiton() {
-    const randomDuration = `${Utils.getRangedRandomNumber(4, 10) * 1}s`;
+  render() {
+    this.particles.forEach((particle, index) => {
+      particle.draw();
+      particle.update();
+    });
+  }
 
-    for (let i = 1; i < this.childrenLength + 1; i++) {
-      const randomDelay = `${Utils.getRangedRandomNumber(1, 5) * 1}s`;
-      const el = this.elements[i];
-      el.style.transform = `translate(${this.randomX[i]}, -100px) rotate(90deg)`;
-      // el.style.animation = `fall-${i} ${randomDuration} ${randomDelay} infinite linear`;
-      el.style.animationName = `fall-${i}`;
-      el.style.animationDuration = `${randomDuration}`;
-      el.style.animationDelay = `${randomDelay}`;
-      el.style.animationIterationCount = "infinite";
-      el.style.animationTimingFunction = "linear";
+  wrapText(text) {
+    const words = text.split(" ");
+    let lineNumber = 0;
+    let testLine = "";
+    let lineArr = [];
+    for (let i = 0; i < words.length; i++) {
+      testLine += words[i] + " ";
+      const testLineLength = this.context.measureText(testLine).width;
+      if (testLineLength > this.textMaxLength) {
+        testLine = words[i] + " ";
+        lineNumber++;
+      }
+      lineArr[lineNumber] = testLine;
     }
+    const textBoxHeight = this.lineHeight * lineArr.length;
+    const textY = this.canvas.height / 2 - textBoxHeight / 2;
+    const textX = this.canvas.width / 2;
+    lineArr.forEach((text, lineIdx) => {
+      console.log(this);
+      this.context.fillText(text, textX, textY + lineIdx * this.lineHeight);
+    });
+    this.convertToPixels();
   }
 }
 
-module.exports = AnimationController;
+module.exports = Effect;
 
-},{"../utils/Utils":5}],2:[function(require,module,exports){
-class Background {
-  constructor() {
-    this.body = document.getElementsByTagName("body")[0];
-
-    if (this.body) {
-      this.setStage();
-    }
+},{"./Particle":3}],3:[function(require,module,exports){
+class Particle {
+  constructor(effect, x, y, colour) {
+    this.colour = colour;
+    this.effect = effect;
+    this.originX = x;
+    this.originY = y;
+    this.x = Math.random() * this.effect.canvas.width;
+    this.y = Math.random() * this.effect.canvas.height;
+    this.ease = Math.random() * 0.01 + 0.02;
   }
-
-  setStage() {
-    console.log(this.body.style);
-    this.body.style.height = "100vh";
-    this.body.style.overflow = "hidden";
-    this.body.style.background =
-      "radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%)";
+  update() {
+    this.x += (this.originX - this.x) * this.ease;
+    this.y += (this.originY - this.y) * this.ease;
+  }
+  draw() {
+    const { effect } = this;
+    effect.context.fillRect(this.x, this.y, effect.gap, effect.gap);
   }
 }
 
-module.exports = Background;
+module.exports = Particle;
 
-},{}],3:[function(require,module,exports){
-const Background = require("./Background");
-const Rain = require("./Rain");
+},{}],4:[function(require,module,exports){
+const Effect = require("./Effect");
 const Utils = require("../utils/Utils");
-const AnimationController = require("./AnimationController");
+window.addEventListener("load", () => {
+  document.body.style.background = "black";
+  document.body.style.height = "100vh";
+  document.body.style.overflow = "hidden";
+  const canvasEl = Utils.createDOMElement("canvas");
+  Utils.addAttribute(canvasEl, [{ name: "id", value: "_canvas" }]);
+  Utils.prependChild(document.body, canvasEl);
+  const context = canvasEl.getContext("2d");
 
-class CodeRain {
-  constructor() {
-    this.body = document.getElementsByTagName("body")[0];
-    this.rainLength = 30;
-    new Background();
-    const RainArr = [];
+  const effect = new Effect(context, canvasEl);
+  console.log(effect);
+  effect.wrapText("hello world");
+  function animate() {
+    effect.context.clearRect(0, 0, canvasEl.width, canvasEl.height);
+    effect.render();
 
-    for (let i = 0; i < this.rainLength; i++) {
-      const randomCharacterLength = Utils.getRangedRandomNumber(40, 100);
-      const r = new Rain(randomCharacterLength);
-      RainArr.push(r);
-    }
-
-    new AnimationController(this.rainLength);
-
-    console.log("Code Rain is Excuted");
+    requestAnimationFrame(animate);
   }
-}
+  animate();
+});
+// class Particle {
+//   constructor(effect, x, y, color) {
+//     // 59:27
+//     this.effect = effect;
+//     this.x = Math.random() * this.effect.canvasWidth;
+//     this.y = Math.random() * this.effect.canvasHeight;
+//     this.color = color;
+//     this.originX = x;
+//     this.originY = y;
+//     this.size = this.effect.gap;
+//     this.dx = 0;
+//     this.dy = 0;
+//     this.vx = 0;
+//     this.vy = 0;
+//     this.force = 0;
+//     this.angle = 0;
+//     this.distance = 0;
+//     this.friction = Math.random() * 0.6 + 0.15;
+//     this.ease = Math.random() * 0.1 + 0.005;
+//   }
+//   draw() {
+//     this.effect.context.fillStyle = this.color;
+//     // this.effect.context.fillRect(this.x, this.y, this.size, this.size);
+//     this.effect.context.fillRect(this.x, this.y, this.size, this.size);
+//   }
+//   update() {
+//     this.x += (this.originX - this.x) * this.ease;
+//     this.y += (this.originY - this.y) * this.ease;
+//   }
+// }
 
-module.exports = CodeRain;
-window.CodeRain = CodeRain;
+// class Effect {
+//   constructor(context, canvasWidth, canvasHeight) {
+//     this.canvasWidth = canvasWidth;
+//     this.canvasHeight = canvasHeight;
+//     this.textX = this.canvasWidth / 2;
+//     this.textY = this.canvasHeight / 2;
+//     this.fontSize = 70;
+//     this.lineHeight = this.fontSize * 1.3;
+//     this.maxTextWidth = this.canvasWidth * 0.8;
+//     this.textInput = document.getElementById("textInput");
+//     this.context = context;
 
-},{"../utils/Utils":5,"./AnimationController":1,"./Background":2,"./Rain":4}],4:[function(require,module,exports){
-const Utils = require("../utils/Utils");
-class Rain {
-  characters = [
-    "ｦ",
-    "ｧ",
-    "ｨ",
-    "ｩ",
-    "ｪ",
-    "ｫ",
-    "ｬ",
-    "ｭ",
-    "ｮ",
-    "ｯ",
-    "ｰ",
-    "ｱ",
-    "ｲ",
-    "ｳ",
-    "ｴ",
-    "ｵ",
-    "ｶ",
-    "ｷ",
-    "ｸ",
-    "ｹ",
-    "ｺ",
-    "ｻ",
-    "ｼ",
-    "ｽ",
-    "0",
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-  ];
-  // characters = ["가", "나", "다", "라", "마", "바", "사", "아", "차", "파"];
-  // characters: "ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ";
-  randomCharacterSet = new Set();
-  constructor(randomLength) {
-    console.log("RandomLegnth", randomLength);
-    this.rainID = null;
-    this.randomLength = randomLength;
-    for (let i = 0; i < randomLength; i++) {
-      const randomIndex = Utils.getRandomNumber(this.characters.length);
-      this.randomCharacterSet.add(this.characters[randomIndex]);
-    }
-    // this.setRandomCharacter();
-    this.setRainToDOM();
-  }
-  setRandomCharacter(el) {
-    let a;
-  }
-  setRainToDOM() {
-    if (!document.body) console.log("no body");
-    if (document.body) {
-      const el = Utils.createDOMElement("div");
-      el.style.transform = "rotate(90deg)";
-      el.style.color = "green";
-      el.style.fontSize = "24px";
-      el.style.letterSpacing = "3px";
-      el.style.fontWeight = "bold";
-      el.style.transformOrigin = "left top";
+//     const gradient = this.context.createLinearGradient(
+//       0,
+//       0,
+//       this.canvasWidth,
+//       this.canvasHeight
+//     );
+//     gradient.addColorStop(0, "#93BFC1");
+//     gradient.addColorStop(0.3, "#FDB5A0");
+//     gradient.addColorStop(0.6, "#93BFC1");
+//     gradient.addColorStop(1, "#FEEE62");
 
-      Utils.addAttribute(el, [{ name: "class", value: "rain" }]);
-      this.rainID = setInterval(() => {
-        el.innerHTML = "";
-        for (let i = 0; i < this.randomLength; i++) {
-          const span = Utils.createDOMElement("span");
-          let randomIdx = Utils.getRandomNumber(this.characters.length - 1);
-          span.innerHTML = this.characters[Utils.getRandomNumber(randomIdx)];
-          span.style.display = "inline-block";
-          span.style.transformOrigin = "left top";
-          span.style.transform = "rotate(-90deg)";
+//     this.context.font = `${this.fontSize}px sans-serif`;
+//     this.context.fillStyle = gradient;
+//     this.context.textAlign = "center";
+//     this.context.textBaseline = "middle";
 
-          Utils.addAttribute(span, [{ name: "class", value: "char" }]);
-          Utils.prependChild(el, span);
-        }
-      }, 500);
-      Utils.prependChild(document.body, el);
-    }
-  }
-}
+//     this.inputText = document.createElement("input");
+//     this.inputText.setAttribute("name", "texts");
+//     this.inputText.setAttribute("class", "input-ctrl");
+//     document.body.prepend(this.inputText);
 
-module.exports = Rain;
+//     this.inputText.style.background = "gray";
+//     this.inputText.style.width = "calc(100% - 20px)";
+//     this.inputText.style.height = "44px";
+//     this.inputText.style.margin = "10px auto";
+//     this.inputText.style.outline = "none";
+//     this.inputText.style.position = "fixed";
+//     this.inputText.style.top = "0";
+//     this.inputText.style.left = "0";
+//     this.inputText.style.right = "0";
 
-},{"../utils/Utils":5}],5:[function(require,module,exports){
+//     this.inputText.addEventListener("keyup", (e) => {
+//       const { value } = e.target;
+//       if (e.key !== " ") {
+//         effect.wrapText(value);
+//         effect.render();
+//       }
+//     });
+
+//     this.particles = [];
+//     this.gap = 3;
+//     this.mouse = {
+//       radius: 20000,
+//       x: 0,
+//       y: 0,
+//     };
+//   }
+//   convertToParticles() {
+//     this.particles = [];
+//     const pixels = this.context.getImageData(
+//       0,
+//       0,
+//       this.canvasWidth,
+//       this.canvasHeight
+//     ).data;
+
+//     console.log(pixels);
+//     this.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+//     for (let y = 0; y < this.canvasHeight; y += this.gap) {
+//       for (let x = 0; x < this.canvasWidth; x += this.gap) {
+//         const index = (y * this.canvasWidth + x) * 4;
+//         const alpha = pixels[index + 3];
+//         if (alpha > 0) {
+//           const red = pixels[index];
+//           const green = pixels[index + 1];
+//           const blue = pixels[index + 2];
+//           const color = `rgb(${red}, ${green}, ${blue})`;
+//           this.particles.push(new Particle(this, x, y, color));
+//         }
+//       }
+//     }
+//     console.log("particles: ", this.particles);
+//   }
+//   render() {
+//     this.particles.forEach((particle) => {
+//       particle.draw();
+//       particle.update();
+//     });
+//   }
+//   setGrid() {
+//     this.context.lineWidth = 3;
+//     this.context.strokeStyle = "yellow";
+//     this.context.beginPath();
+//     this.context.moveTo(this.canvasWidth / 2, 0);
+//     this.context.lineTo(this.canvasWidth / 2, this.canvasHeight);
+//     this.context.stroke();
+
+//     this.context.lineWidth = 3;
+//     this.context.strokeStyle = "blue";
+//     this.context.beginPath();
+//     this.context.moveTo(0, this.canvasHeight / 2);
+//     this.context.lineTo(this.canvasWidth, this.canvasHeight / 2);
+//     this.context.stroke();
+//   }
+//   wrapText(text) {
+//     // set
+//     const words = text.split(" ");
+//     let lineNumber = 0;
+//     let line = "";
+//     let lineArr = [];
+//     for (let i = 0; i < words.length; i++) {
+//       const testLine = line + words[i] + " ";
+//       if (this.context.measureText(testLine).width > this.maxTextWidth) {
+//         lineNumber++;
+//         line = words[i] + " ";
+//       } else {
+//         line = testLine;
+//       }
+//       lineArr[lineNumber] = line;
+//     }
+
+//     lineArr.forEach((word, line) => {
+//       const lineIdx = line + 1; // line, start off with 0, but we are going to get the text Box size when it's comp
+//       this.context.textAlign = "center";
+//       this.context.textBaseline = "middle";
+//       const textHeight = lineArr.length * this.lineHeight;
+//       const textY = this.canvasHeight / 2 - textHeight / 2;
+//       this.context.fillText(
+//         word,
+//         this.canvasWidth / 2,
+//         textY + line * this.lineHeight
+//       );
+//       this.context.strokeText(
+//         word,
+//         this.canvasWidth / 2,
+//         textY + line * this.lineHeight
+//       );
+//     });
+//     this.convertToParticles();
+//   }
+// }
+
+// window.addEventListener("load", () => {
+//   const canvas = document.createElement("canvas");
+//   canvas.width = window.innerWidth;
+//   canvas.height = window.innerHeight;
+//   canvas.setAttribute("id", "_canvas");
+//   canvas.innerHTML = "this browser doesn't support canvas";
+//   document.body.style.height = "100vh";
+//   document.body.style.background = "black";
+
+//   document.body.prepend(canvas);
+//   const ctx = canvas.getContext("2d");
+//   const effect = new Effect(ctx, window.innerWidth, window.innerHeight);
+//   effect.wrapText(
+//     "All you need in this life is ignorance and confidence, then success is sure"
+//   );
+//   // effect.render();
+//   function animate() {
+//     ctx.clearRect(0, 0, canvas.width, canvas.height);
+//     effect.render();
+//     requestAnimationFrame(animate);
+//   }
+//   animate();
+// });
+
+},{"../utils/Utils":5,"./Effect":2}],5:[function(require,module,exports){
 const Utils = {
   getRandomNumber: function (limit) {
     return Math.floor(Math.random() * limit);
@@ -234,4 +357,4 @@ const Utils = {
 
 module.exports = Utils;
 
-},{}]},{},[3]);
+},{}]},{},[1]);
