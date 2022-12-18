@@ -1,5 +1,6 @@
 const Effect = require("./Effect");
 const Utils = require("../utils/Utils");
+const WORDS = "I'M ON A SEAFOOD DIET, I SEE FOOD AND I EAT IT";
 window.addEventListener("load", () => {
   document.body.style.background = "black";
   document.body.style.height = "100vh";
@@ -7,11 +8,25 @@ window.addEventListener("load", () => {
   const canvasEl = Utils.createDOMElement("canvas");
   Utils.addAttribute(canvasEl, [{ name: "id", value: "_canvas" }]);
   Utils.prependChild(document.body, canvasEl);
-  const context = canvasEl.getContext("2d");
+  const context = canvasEl.getContext("2d", { willReadFrequently: true });
 
+  const inputEl = Utils.createDOMElement("input");
+  inputEl.style.position = "fixed";
+  inputEl.style.top = "0px";
+  inputEl.style.left = "0px";
+  inputEl.style.width = "100%";
+  inputEl.style.height = "46px";
+  Utils.prependChild(document.body, inputEl);
+  Utils.addAttribute(inputEl, [
+    { name: "name", value: "text" },
+    { name: "id", value: "textInput" },
+    { name: "value", value: WORDS },
+  ]);
   const effect = new Effect(context, canvasEl);
+
   console.log(effect);
-  effect.wrapText("hello world");
+  effect.wrapText(inputEl.value);
+  effect.render();
   function animate() {
     effect.context.clearRect(0, 0, canvasEl.width, canvasEl.height);
     effect.render();
@@ -19,7 +34,15 @@ window.addEventListener("load", () => {
     requestAnimationFrame(animate);
   }
   animate();
+  window.addEventListener("resize", (e) => {
+    canvasEl.width = window.innerWidth;
+    canvasEl.height = window.innerHeight;
+
+    effect.resize(window.innerWidth, window.innerHeight);
+    effect.wrapText(inputEl.value);
+  });
 });
+
 // class Particle {
 //   constructor(effect, x, y, color) {
 //     // 59:27

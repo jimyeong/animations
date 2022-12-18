@@ -7,13 +7,35 @@ class Effect {
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
     this.fontSize = 90;
-    this.lineHeight = this.fontSize * 0.8;
+    this.lineHeight = this.fontSize * 1.1;
     this.context.font = `${this.fontSize}px Helvetica`;
     this.context.textAlign = "center";
     this.context.textBaseLine = "middle";
     this.context.fillStyle = "#fff";
-    this.textMaxLength = 400;
-    this.gap = 3;
+    this.textMaxLength = this.canvas.width * 0.8;
+    this.gap = 4;
+    this.x = 0;
+    this.y = 0;
+    this.mouse = {
+      radius: 200,
+      x: 0,
+      y: 0,
+    };
+    this.textX = this.canvas.widht / 2;
+    this.textY = this.canvas.height / 2;
+
+    const textInput = document.getElementById("textInput");
+    textInput.addEventListener("keyup", (e) => {
+      if (e.key !== " ") {
+        const { value } = e.target;
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.wrapText(value);
+      }
+    });
+    window.addEventListener("mousemove", (e) => {
+      this.mouse.x = e.x;
+      this.mouse.y = e.y;
+    });
   }
   convertToPixels() {
     this.particles = [];
@@ -43,6 +65,15 @@ class Effect {
       }
     }
   }
+  resize(width, height) {
+    this.canvas.height = height;
+    this.canvas.width = width;
+
+    this.textX = this.canvas.widht / 2;
+    this.textY = this.canvas.height / 2;
+    this.textMaxLength = this.canvas.width * 0.8;
+  }
+
   render() {
     this.particles.forEach((particle, index) => {
       particle.draw();
@@ -65,11 +96,14 @@ class Effect {
       lineArr[lineNumber] = testLine;
     }
     const textBoxHeight = this.lineHeight * lineArr.length;
-    const textY = this.canvas.height / 2 - textBoxHeight / 2;
-    const textX = this.canvas.width / 2;
+    this.textY = this.canvas.height / 2 - textBoxHeight / 2;
+    this.textX = this.canvas.width / 2;
     lineArr.forEach((text, lineIdx) => {
-      console.log(this);
-      this.context.fillText(text, textX, textY + lineIdx * this.lineHeight);
+      this.context.fillText(
+        text,
+        this.textX,
+        this.textY + lineIdx * this.lineHeight
+      );
     });
     this.convertToPixels();
   }
